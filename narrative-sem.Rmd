@@ -1,6 +1,6 @@
 # Students' Development of Statistical Narratives in Probability Modeling SEM
 
-### Pre-processing
+### 
 
 ```{r}
 library(lavaan) # for SEM
@@ -59,7 +59,6 @@ SEMcombined$NE5 <- as.ordered(SEMcombined$NE5)
 This was the first structure made and tested, with no changes to any of the ANIQ columns or subcategories. Not favored due to the bad scaled CFI, RMSEA, and SRMR values of 0.622, 0.549, and 0.123, respectively. Initial conclusion for the bad fit was due to the lack of overall used observations (n = 40) given the amount of ANIQ parameters.
 
 ```{r}
-# get lavaan structure
 model1 <- "
   aw =~ AW1 + AW2 + AW3 + AW4 + AW5
   tm =~ TM1 + TM2 + TM3 + TM4 + TM5
@@ -74,4 +73,52 @@ model1 <- "
 fit1 <- sem(model1, data = SEMcombined, ordered = c("NE3", "NE4", "NE5"))
 
 summary(fit1, fit.measures = TRUE, standardized = TRUE)
+```
+
+### Model 2: EFA Adjustments
+
+This model was similar to the first; however, removed the ANIQ items that either had low factor loadings or cross-loadings based on Jon's findings. Based on these adjustments, noticed that CFI improved slightly to 0.662 and TLI improved to 0.577, but SRMR fell to 0.110 on n = 40 observations.
+
+```{r}
+model2 <- "
+  aw =~ AW1 + AW2 + AW3 + AW4
+  tm =~ TM1 + TM2 + TM3 + TM4 + TM5
+  ca =~ CA2 + CA3 + CA4 + CA5
+  th =~ TH1 + TH3 + TH4 + TH5
+
+  NE3 ~ aw + tm + ca + th
+  NE4 ~ aw + tm + ca + th
+  NE5 ~ aw + tm + ca + th
+"
+
+fit2 <- sem(model2, data = SEMcombined, ordered = c("NE3", "NE4", "NE5"))
+
+summary(fit2, fit.measures = TRUE, standardized = TRUE)
+```
+
+### Model 3: Activity Dependency
+
+This model was made considering that the latter activities (4 and 5) were dependent on the previous as the students progressed through the activities. Additionally, this model uses the same subcategories as Model 2. This model had the best fit of the three with a CFI of 0.967, TLI of 0.959, and SRMR of 0.082. Unsure if this is due to overfitting.
+```{r}
+model3 <- "
+  aw =~ AW1 + AW2 + AW3 + AW4
+  tm =~ TM1 + TM2 + TM3 + TM4 + TM5
+  ca =~ CA2 + CA3 + CA4 + CA5
+  th =~ TH1 + TH3 + TH4 + TH5
+
+  NE3 ~ aw + tm + ca + th
+  NE4 ~ NE3 + aw + tm + ca + th
+  NE5 ~ NE4 + aw + tm + ca + th
+"
+
+fit3 <- sem(
+  model3,
+  data = SEMcombined,
+  ordered = c(item_cols, "NE3","NE4","NE5"),
+  estimator = "WLSMV",
+  parameterization = "theta",
+  missing = "pairwise"
+)
+
+summary(fit3, fit.measures = TRUE, standardized = TRUE)
 ```
