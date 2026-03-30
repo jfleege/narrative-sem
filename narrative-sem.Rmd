@@ -1,6 +1,16 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
 # Students' Development of Statistical Narratives in Probability Modeling SEM
 
-### 
+### Issues So Far
+
+-   Total N = **84**
+-   Complete cases = **40**
+-   A lot of missing observations in NE4 (30 missing) and NE5 (27 missing), casuing the full SEM to become unstable due to small sample size
 
 ```{r}
 library(lavaan) # for SEM
@@ -54,6 +64,16 @@ SEMcombined$NE4 <- as.ordered(SEMcombined$NE4)
 SEMcombined$NE5 <- as.ordered(SEMcombined$NE5)
 ```
 
+### Data Set Information
+
+```{r}
+sum(complete.cases(SEMcombined)) # complete cases
+nrow(SEMcombined) # total number of observations (students)
+colSums(is.na(SEMcombined)) # number of missing values per column
+```
+
+I thought it might be helpful to include this brief information about the data set before diving into the models to get a better understanding of why we might be encountering certain problems. After running these commands, I found that there are 40 complete cases out of 84 total observations (probably not good), with some missing values in the ANIQ item columns.
+
 ### Model 1: Baseline
 
 This was the first structure made and tested, with no changes to any of the ANIQ columns or subcategories. Not favored due to the bad scaled CFI, RMSEA, and SRMR values of 0.622, 0.549, and 0.123, respectively. Initial conclusion for the bad fit was due to the lack of overall used observations (n = 40) given the amount of ANIQ parameters.
@@ -98,7 +118,8 @@ summary(fit2, fit.measures = TRUE, standardized = TRUE)
 
 ### Model 3: Activity Dependency
 
-This model was made considering that the latter activities (4 and 5) were dependent on the previous as the students progressed through the activities. Additionally, this model uses the same subcategories as Model 2. This model had the best fit of the three with a CFI of 0.967, TLI of 0.959, and SRMR of 0.082. Unsure if this is due to overfitting.
+This model was made considering that the latter activities (4 and 5) were dependent on the previous as the students progressed through the activities. Additionally, this model uses the same subcategories as Model 2. This model had the best fit of the three with a CFI of 0.967, TLI of 0.959, and SRMR of 0.082. Unsure if this is due to over fitting.
+
 ```{r}
 model3 <- "
   aw =~ AW1 + AW2 + AW3 + AW4
@@ -122,3 +143,7 @@ fit3 <- sem(
 
 summary(fit3, fit.measures = TRUE, standardized = TRUE)
 ```
+
+### Conclusion
+
+Looking for guidance on how to appropriately model this data set given the number of missing observations and whether a reduced SEM, CFA, or maybe an alternative approach is most appropriate for our situation.
