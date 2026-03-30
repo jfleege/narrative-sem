@@ -1,0 +1,77 @@
+# Students' Development of Statistical Narratives in Probability Modeling SEM
+
+### Pre-processing
+
+```{r}
+library(lavaan) # for SEM
+library(tidyverse, quietly = TRUE) # for data set join, file link read
+```
+
+```{r}
+# get data from all three activities
+A3 = read_csv("https://raw.githubusercontent.com/jfleege/narrative-sem/main/datasets/CombinedActivity3.csv", show_col_types = FALSE)%>%
+  rename(Anonymous.ID = `Anonymous ID`)
+
+A3$Survey_NE = as.numeric(A3$Survey_NE)
+
+A4 = read_csv("https://raw.githubusercontent.com/jfleege/narrative-sem/main/datasets/CombinedActivity4.csv", show_col_types = FALSE)%>%
+  rename(Anonymous.ID = `Anonymous ID`)
+
+A4$Survey_NE = as.numeric(A4$Survey_NE)
+
+A5 = read_csv("https://raw.githubusercontent.com/jfleege/narrative-sem/main/datasets/CombinedActivity5.csv", show_col_types = FALSE) %>%
+  rename(Anonymous.ID = `Anonymous ID`)
+
+A5$Survey_NE = as.numeric(A5$Survey_NE)
+
+# establish ANIQ columns
+item_cols <- c("AW1","AW2","AW3","AW4","AW5",
+               "TM1","TM2","TM3","TM4","TM5",
+               "CA1","CA2","CA3","CA4","CA5",
+               "TH1","TH2","TH3","TH4","TH5")
+
+# combine data across all three activities
+SEMcombined <- A3 %>%
+  select(Anonymous.ID, all_of(item_cols), NE3 = Survey_NE) %>%
+  left_join(
+    A4 %>% select(Anonymous.ID, NE4 = Survey_NE),
+    by = "Anonymous.ID"
+  ) %>%
+  left_join(
+    A5 %>% select(Anonymous.ID, NE5 = Survey_NE),
+    by = "Anonymous.ID"
+  )
+
+# convert ANIQ item columns to numeric
+SEMcombined[item_cols] <- lapply(
+  SEMcombined[item_cols],
+  function(x) as.numeric(as.character(x))
+)
+
+# order data
+SEMcombined$NE3 <- as.ordered(SEMcombined$NE3)
+SEMcombined$NE4 <- as.ordered(SEMcombined$NE4)
+SEMcombined$NE5 <- as.ordered(SEMcombined$NE5)
+```
+
+### Model 1: Baseline
+
+This was the first structure made and tested, with no changes to any of the ANIQ columns or subcategories. Not favored due to the bad scaled CFI, RMSEA, and SRMR values of 0.622, 0.549, and 0.123, respectively. Initial conclusion for the bad fit was due to the lack of overall used observations (n = 40) given the amount of ANIQ parameters.
+
+```{r}
+# get lavaan structure
+model1 <- "
+  aw =~ AW1 + AW2 + AW3 + AW4 + AW5
+  tm =~ TM1 + TM2 + TM3 + TM4 + TM5
+  ca =~ CA1 + CA2 + CA3 + CA4 + CA5
+  th =~ TH1 + TH2 + TH3 + TH4 + TH5
+
+  NE3 ~ aw + tm + ca + th
+  NE4 ~ aw + tm + ca + th
+  NE5 ~ aw + tm + ca + th
+"
+
+fit1 <- sem(model1, data = SEMcombined, ordered = c("NE3", "NE4", "NE5"))
+
+summary(fit1, fit.measures = TRUE, standardized = TRUE)
+```
