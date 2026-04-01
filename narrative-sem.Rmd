@@ -147,3 +147,98 @@ summary(fit3, fit.measures = TRUE, standardized = TRUE)
 ### Conclusion
 
 Looking for guidance on how to appropriately model this data set given the number of missing observations and whether a reduced SEM, CFA, or maybe an alternative approach is most appropriate for our situation.
+
+```{r}
+model4 <- "
+  aw =~ AW1 + AW2 + AW3 + AW4
+  tm =~ TM1 + TM2 + TM3 + TM4 + TM5
+  ca =~ CA2 + CA3 + CA4 + CA5
+  th =~ TH1 + TH3 + TH4 + TH5
+
+  NE5 ~ NE3 + NE4 + aw + tm + ca + th
+"
+
+fit4 <- sem(
+  model4,
+  data = SEMcombined,
+  ordered = c("NE3","NE4","NE5"),
+  estimator = "WLSMV",
+  parameterization = "theta",
+  missing = "pairwise"
+)
+
+summary(fit4, fit.measures = TRUE, standardized = TRUE)
+```
+
+```{r}
+model5 <- "
+  aw =~ AW1 + AW2 + AW3 + AW4
+  tm =~ TM1 + TM2 + TM3 + TM4 + TM5
+  ca =~ CA2 + CA3 + CA4 + CA5
+  th =~ TH1 + TH3 + TH4 + TH5
+  
+  NI =~ aw + tm + ca + th
+  NE3 ~~ NE4
+  NE3 ~~ NI
+  NE4 ~~ NI
+  NE5 ~ NE3 + NE4 + NI
+"
+
+fit5 <- sem(
+  model5,
+  data = SEMcombined,
+  ordered = c("NE3","NE4","NE5"),
+  estimator = "WLSMV",
+  parameterization = "theta",
+  missing = "pairwise"
+)
+
+summary(fit5, fit.measures = TRUE, standardized = TRUE)
+```
+
+```{r}
+model6 <- "
+  aw =~ AW1 + AW2 + AW3 + AW4
+  tm =~ TM1 + TM2 + TM3 + TM4 + TM5
+  ca =~ CA2 + CA3 + CA4 + CA5
+  th =~ TH1 + TH3 + TH4 + TH5
+  
+  NI =~ aw + tm + ca + th
+  NE4 ~~ NI
+  NE5 ~ NE4 + NI
+"
+
+fit6 <- sem(
+  model6,
+  data = SEMcombined,
+  ordered = c("NE4","NE5"),
+  estimator = "WLSMV",
+  parameterization = "theta",
+  missing = "pairwise"
+)
+
+summary(fit6, fit.measures = TRUE, standardized = TRUE)
+```
+
+```{r}
+model7 <- "
+  aw =~ AW1 + AW2 + AW3 + AW4
+  tm =~ TM1 + TM2 + TM3 + TM4 + TM5
+  ca =~ CA2 + CA3 + CA4 + CA5
+  th =~ TH1 + TH3 + TH4 + TH5
+  
+  NE4 ~~ aw + tm + ca + th
+  NE5 ~ NE4 + aw + tm + ca + th
+"
+
+fit7 <- sem(
+  model7,
+  data = SEMcombined,
+  ordered = c("NE4","NE5"),
+  estimator = "WLSMV",
+  parameterization = "theta",
+  missing = "pairwise"
+)
+
+summary(fit7, fit.measures = TRUE, standardized = TRUE)
+```
