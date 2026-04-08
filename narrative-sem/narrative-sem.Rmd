@@ -242,3 +242,62 @@ fit7 <- sem(
 
 summary(fit7, fit.measures = TRUE, standardized = TRUE)
 ```
+
+```{r}
+library(car)
+
+SEMcombined$aw <- rowMeans(SEMcombined[, c("AW1","AW2","AW3","AW4")], na.rm = TRUE)
+SEMcombined$tm <- rowMeans(SEMcombined[, c("TM1","TM2","TM3","TM4","TM5")], na.rm = TRUE)
+SEMcombined$ca <- rowMeans(SEMcombined[, c("CA2","CA3","CA4","CA5")], na.rm = TRUE)
+SEMcombined$th <- rowMeans(SEMcombined[, c("TH1","TH3","TH4","TH5")], na.rm = TRUE)
+
+A3_log <- glm(NE3 ~ aw + tm + ca + th, data = SEMcombined, family = binomial)
+A4_log <- glm(NE4 ~ aw + tm + ca + th, data = SEMcombined, family = binomial)
+
+model8 <- "
+  aw =~ AW1 + AW2 + AW3 + AW4
+  tm =~ TM1 + TM2 + TM3 + TM4 + TM5
+  ca =~ CA2 + CA3 + CA4 + CA5
+  th =~ TH1 + TH3 + TH4 + TH5
+
+  NE3 ~ aw + tm + ca + th
+  NE4 ~ NE3 + aw + tm + ca + th
+  NE5 ~ NE4 + aw + tm + ca + th
+"
+
+fit8 <- sem(
+  model8,
+  data = SEMcombined,
+  ordered = c("NE3", "NE4", "NE5"),
+  estimator = "WLSMV",
+  parameterization = "theta",
+  missing = "pairwise"
+)
+
+summary(fit8, fit.measures = TRUE, standardized = TRUE)
+```
+
+```{r}
+model9 <- "
+  aw =~ AW1 + AW2 + AW3 + AW4
+  tm =~ TM1 + TM2 + TM3 + TM4 + TM5
+  ca =~ CA2 + CA3 + CA4 + CA5
+  th =~ TH1 + TH3 + TH4 + TH5
+
+  NE3 ~ aw + tm + ca + th
+  NE4 ~ aw + tm + ca + th
+  NE5 ~ NE3 + NE4 + aw + tm + ca + th
+"
+
+fit9 <- sem(
+  model9,
+  data = SEMcombined,
+  ordered = c("NE3", "NE4", "NE5"),
+  estimator = "WLSMV",
+  parameterization = "theta",
+  missing = "pairwise"
+)
+
+summary(fit9, fit.measures = TRUE, standardized = TRUE)
+```
+
